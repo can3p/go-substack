@@ -14,8 +14,11 @@ import (
 
 const apiRoot = "https://%s.substack.com/api/v1/"
 
-func endpoint(substackName, endpoint string) string {
-	return fmt.Sprintf(apiRoot, substackName) + endpoint
+func endpoint(substackName string, endpoint string, args ...any) string {
+	str := apiRoot + endpoint
+	a := []any{substackName}
+	a = append(a, args...)
+	return fmt.Sprintf(str, a...)
 }
 
 type Client struct {
@@ -74,6 +77,40 @@ func (c *Client) CreateNewDraft(ctx context.Context, draft *types.Draft) (*types
 	return &returnDraft, nil
 }
 
+func (c *Client) UpdateDraft(ctx context.Context, draftID int, draft *types.Draft) (*types.Draft, error) {
+	req, err := prepareRequest(ctx, draft, http.MethodPut, c.sessionID, endpoint(c.substackName, "drafts/%d", draftID))
+
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := c.httpClient.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := io.ReadAll(res.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Unexpected error from the server. Response code: %d, Response body: %s", res.StatusCode, string(body))
+	}
+
+	var returnDraft types.Draft
+
+	if err := json.Unmarshal(body, &returnDraft); err != nil {
+		return nil, err
+	}
+
+	return &returnDraft, nil
+}
+
 func prepareRequest(ctx context.Context, payload any, httpMethod string, sessionID string, url string) (*http.Request, error) {
 	jsonBody, err := json.Marshal(payload)
 
@@ -83,7 +120,7 @@ func prepareRequest(ctx context.Context, payload any, httpMethod string, session
 
 	bodyReader := bytes.NewReader(jsonBody)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bodyReader)
+	req, err := http.NewRequestWithContext(ctx, httpMethod, url, bodyReader)
 
 	if err != nil {
 		return nil, err
