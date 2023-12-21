@@ -17,8 +17,8 @@ type ImageResponse struct {
 }
 
 type DraftBylines struct {
-	ID      int  `json:"id,omitempty"`
-	IsGuest bool `json:"is_guest,omitempty"`
+	ID      int  `json:"id"`
+	IsGuest bool `json:"is_guest"`
 }
 
 type DraftBody Node
