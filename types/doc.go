@@ -37,3 +37,10 @@ type Node struct {
 	Text  string  `json:"text,omitempty"`
 	Marks []*Mark `json:"marks,omitempty"`
 }
+
+func NewNode(t NodeType, content ...*Node) *Node {
+	return &Node{
+		Type:    t,
+		Content: content,
+	}
+}

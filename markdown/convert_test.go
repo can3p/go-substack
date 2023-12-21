@@ -18,21 +18,20 @@ func TestToDoc(t *testing.T) {
 	examples := []testCase{
 		{
 			description: "simplest case",
-			input:       `test`,
-			output: &types.Node{
-				Type: types.NTDoc,
-				Content: []*types.Node{
-					{
-						Type: types.NTParagraph,
-						Content: []*types.Node{
-							{
-								Type: types.NTText,
-								Text: "test",
-							},
-						},
-					},
-				},
-			},
+			input:       "first\n\nsecond",
+			output: types.NewNode(
+				types.NTDoc,
+				types.NewNode(types.NTParagraph,
+					&types.Node{
+						Type: types.NTText,
+						Text: "first",
+					}),
+				types.NewNode(types.NTParagraph,
+					&types.Node{
+						Type: types.NTText,
+						Text: "second",
+					}),
+			),
 		},
 	}
 
